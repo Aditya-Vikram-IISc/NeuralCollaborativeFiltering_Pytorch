@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from config.py import config_ncf
+from config import config_ncf
 
 class NeuCF(nn.Module):
     def __init__(self, config_nuemf):
