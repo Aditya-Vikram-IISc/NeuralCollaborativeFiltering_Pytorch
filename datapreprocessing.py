@@ -55,6 +55,7 @@ class Datapreprocessor:
             print("Test positive data request couldn't be processed!")
 
         # create a list containing (user_id, movie_id) for training. To be treated as negatives
+        print("Train negative data creation started!")
         train_neg_list = []
         for usr_idx, mov_idx in tqdm(test_list):
             for i in range(n_train_negatives):
@@ -73,6 +74,7 @@ class Datapreprocessor:
 
 
         # create a list containing (user_id, movie_id) for testing. To be treated as negatives
+        print("Test negative data creation started!")
         test_neg_list = []
         for usr_idx, mov_idx in tqdm(test_list):
             for i in range(n_test_negatives):
