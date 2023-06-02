@@ -44,6 +44,20 @@ class Datapreprocessor:
         train_pos_list = list(zip(self.train["user_id"], self.train["movie_id"]))
         test_pos_list = list(zip(self.test["user_id"], self.test["movie_id"]))
 
+        # save the datasets
+        try:
+            # save the list as csv at the respective paths
+            np.savetxt(trainpos_path, train_pos_list, delimiter ="\t", fmt ='% s')
+            print("Train positive data created!")
+        except:
+            print("Train positive data request couldn't be processed!")
+
+        try:
+            np.savetxt(testpos_path, test_pos_list, delimiter ="\t", fmt ='% s')
+            print("Test positive data created!")
+        except:
+            print("Test positive data request couldn't be processed!")
+
         
         # transform the train_pos_list and test_pos_list to dictionaries
         train_pos_dict = {}
@@ -82,19 +96,6 @@ class Datapreprocessor:
 
         
         # save the datasets
-        try:
-            # save the list as csv at the respective paths
-            np.savetxt(trainpos_path, train_pos_list, delimiter ="\t", fmt ='% s')
-            print("Train positive data created!")
-        except:
-            print("Train positive data request couldn't be processed!")
-
-        try:
-            np.savetxt(testpos_path, test_pos_list, delimiter ="\t", fmt ='% s')
-            print("Test positive data created!")
-        except:
-            print("Test positive data request couldn't be processed!")
-
         try:
             # save the list as csv at the respective paths
             np.savetxt(trainneg_path, train_neg_list, delimiter ="\t", fmt ='% s')
