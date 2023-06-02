@@ -2,6 +2,9 @@ import pandas as pd
 import argparse
 import numpy as np
 from tqdm import tqdm
+import random
+
+
 
 class Datapreprocessor:
     '''
@@ -38,32 +41,59 @@ class Datapreprocessor:
         self.test = self.test[['user_id', 'movie_id']].sample(frac=1).reset_index(drop=True)
         
         # get the negative data for testing i.e. for each user id get 100 movieids that he/she hasn't interacted
-        train_list = list(zip(self.train["user_id"], self.train["movie_id"]))
-        test_list = list(zip(self.test["user_id"], self.test["movie_id"]))
+        train_pos_list = list(zip(self.train["user_id"], self.train["movie_id"]))
+        test_pos_list = list(zip(self.test["user_id"], self.test["movie_id"]))
 
+        
+        # transform the train_pos_list and test_pos_list to dictionaries
+        train_pos_dict = {}
+        for usr_id, item_id in train_pos_list:
+            try:
+                train_pos_dict[usr_id].append(item_id)
+            except:
+                train_pos_dict[usr_id] = [item_id]
+
+        # create a list containing (user_id, movie_id) for training. To be treated as negatives. 4 for every positive instance
+        print("Train & Test negative data creation started!")
+        train_neg_list = []
+        test_neg_list = []
+        for usr_idx, mov_idx in tqdm(test_pos_list):
+            # get all movies ids corresponding to the userid
+            tr_pos = train_pos_dict[usr_idx]
+            all_movies = set(range(1, self.n_movies+1))
+            diff_movies = all_movies.difference(set(tr_pos), {mov_idx})
+            
+            # get 100 negatives for test and 4 per positive instance for train
+            n_train = n_train_negatives * len(tr_pos)
+            try:
+                tr_neg_idx = random.sample(list(diff_movies), n_train)
+            except:
+                tr_neg_idx = np.random.choice(list(diff_movies), size = n_train, replace = True)
+            try:
+                te_neg_idx = random.sample(list(diff_movies.difference(tr_neg_idx)), n_test_negatives)
+            except:
+                te_neg_idx = np.random.choice(list(diff_movies.difference(tr_neg_idx)), size = n_test_negatives, replace = True)
+
+            for i in tr_neg_idx:
+                train_neg_list.append((usr_idx, i))
+
+            for j in te_neg_idx:
+                test_neg_list.append((usr_idx, j))
+
+        
+        # save the datasets
         try:
             # save the list as csv at the respective paths
-            np.savetxt(trainpos_path, train_list, delimiter ="\t", fmt ='% s')
+            np.savetxt(trainpos_path, train_pos_list, delimiter ="\t", fmt ='% s')
             print("Train positive data created!")
         except:
             print("Train positive data request couldn't be processed!")
 
         try:
-            np.savetxt(testpos_path, test_list, delimiter ="\t", fmt ='% s')
+            np.savetxt(testpos_path, test_pos_list, delimiter ="\t", fmt ='% s')
             print("Test positive data created!")
         except:
             print("Test positive data request couldn't be processed!")
-
-        # create a list containing (user_id, movie_id) for training. To be treated as negatives. 4 for every positive instance
-        print("Train negative data creation started!")
-        train_neg_list = []
-        for usr_idx, mov_idx in tqdm(train_list):
-            for i in range(n_train_negatives):
-                # get a movie id
-                id_neg = np.random.randint(1, self.n_movies + 1)
-                while (usr_idx, id_neg) in train_list or (usr_idx, id_neg) in test_list:
-                    id_neg = np.random.randint(1, self.n_movies + 1)
-                train_neg_list.append((usr_idx, id_neg))
 
         try:
             # save the list as csv at the respective paths
@@ -72,18 +102,6 @@ class Datapreprocessor:
         except:
             print("Train negative data request couldn't be processed!")
 
-
-        # create a list containing (user_id, movie_id) for testing. To be treated as negatives
-        print("Test negative data creation started!")
-        test_neg_list = []
-        for usr_idx, mov_idx in tqdm(test_list):
-            for i in range(n_test_negatives):
-                # get an movie id not present in train or test
-                id_neg = np.random.randint(1, self.n_movies + 1)
-                while ((usr_idx, id_neg) in train_list) or ((usr_idx, id_neg) in train_neg_list) or (id_neg == mov_idx):
-                    id_neg = np.random.randint(1, self.n_movies + 1)
-                test_neg_list.append((usr_idx, id_neg))
-        
         # save the data in the respective paths
         try:
             # save the list as csv at the respective paths
