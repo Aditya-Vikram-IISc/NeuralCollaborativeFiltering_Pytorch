@@ -3,6 +3,7 @@ import argparse
 import numpy as np
 from tqdm import tqdm
 import random
+import csv
 
 
 
@@ -72,6 +73,7 @@ class Datapreprocessor:
         train_neg_list = []
         test_neg_list = []
         for usr_idx, mov_idx in tqdm(test_pos_list):
+            usr_neg_list = []
             # get all movies ids corresponding to the userid
             tr_pos = train_pos_dict[usr_idx]
             all_movies = set(range(1, self.n_movies+1))
@@ -84,15 +86,18 @@ class Datapreprocessor:
             except:
                 tr_neg_idx = np.random.choice(list(diff_movies), size = n_train, replace = True)
             try:
-                te_neg_idx = random.sample(list(diff_movies.difference(tr_neg_idx)), n_test_negatives)
+                te_neg_idx = random.sample(list(diff_movies.difference(tr_neg_idx)), n_test_negatives-1)
             except:
-                te_neg_idx = np.random.choice(list(diff_movies.difference(tr_neg_idx)), size = n_test_negatives, replace = True)
+                te_neg_idx = np.random.choice(list(diff_movies.difference(tr_neg_idx)), size = n_test_negatives-1, replace = True)
 
             for i in tr_neg_idx:
                 train_neg_list.append((usr_idx, i))
 
-            for j in te_neg_idx:
-                test_neg_list.append((usr_idx, j))
+            usr_neg_list.append((usr_idx, mov_idx))
+            usr_neg_list.extend(te_neg_idx)
+            test_neg_list.append(usr_neg_list)
+            # for j in te_neg_idx:
+            #     test_neg_list.append((usr_idx, j))
 
         
         # save the datasets
@@ -106,10 +111,12 @@ class Datapreprocessor:
         # save the data in the respective paths
         try:
             # save the list as csv at the respective paths
-            np.savetxt(testneg_path, test_neg_list, delimiter ="\t", fmt ='% s')
+            with open(testneg_path, "w") as f:
+                wr = csv.writer(f, delimiter="\t")
+                wr.writerows(test_neg_list)
             print("Test negative data created!")
         except:
-            print("negative data request couldn't be processed!")
+            print("Test negative data request couldn't be processed!")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -128,6 +135,6 @@ if __name__ == "__main__":
     n_users, n_movies = datapreprocessor.get_user_and_movie_counts()
     print("Dataset preparation started! ")
     datapreprocessor.train_test_split(trainpos_path = args.trainpos_path, testpos_path = args.testpos_path, \
-                                      trainneg_path = args.trainneg_path, testneg_path = args.testneg_path, \
-                                      n_train_negatives = args.n_train_negatives, n_test_negatives = args.n_test_negatives)
+                                    trainneg_path = args.trainneg_path, testneg_path = args.testneg_path, \
+                                    n_train_negatives = args.n_train_negatives, n_test_negatives = args.n_test_negatives)
     print(f"Dataset created for num_users : {n_users}, and num_movies : {n_movies} ")
