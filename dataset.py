@@ -3,6 +3,7 @@ import random
 
 class NCFTraining_Dataset(Dataset):
     def __init__(self, ratings_train_pos_path:str, ratings_train_neg_path:str):
+        super(NCFTraining_Dataset, self).__init__()
         positive_data = self.dataprocessor(ratings_train_pos_path, target = 1.0)
         negative_data = self.dataprocessor(ratings_train_neg_path, target = 0.0)
         self.fulldataset = positive_data + negative_data
