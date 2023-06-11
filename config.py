@@ -7,5 +7,6 @@ config_ncf = {
                 "num_items" : 3953,
                 "mlp_latent_vector_dim" : 32,
                 "gmf_latent_vector_dim": 32,
-                "mlp_layer_neurons" : [64, 32, 16]
+                "mlp_layer_neurons" : [64, 32, 16],
+                "lr_rate" :  0.001
                 }
