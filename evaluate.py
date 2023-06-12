@@ -22,14 +22,14 @@ def evaluate_metrics(model, test_loader, top_k):
     HR, NDCG = [], []
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    for user, item, label in test_loader:
+    for user, item in test_loader:
         user = user.to(device)
         item = item.to(device)
         
         # get predicition of one batch of test_loader. (1 postive and rest all negatives)
         predictions = model(user, item)
         _, indices = torch.topk(predictions, top_k)
-        recommends = torch.take(item, indices).cpu().numpy().list()
+        recommends = torch.take(item, indices).cpu().numpy().tolist()
 
         pos_item = item[0].item()
         HR.append(hit(pos_item, recommends))
