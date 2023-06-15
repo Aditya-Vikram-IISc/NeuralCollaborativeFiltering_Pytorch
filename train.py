@@ -26,7 +26,6 @@ test_dataset = NCFTesting_Dataset(ratings_test_path = "data/ratings_test_neg")
 train_dataloader = DataLoader(train_dataset, batch_size=256, shuffle=True, num_workers=2)
 test_dataloader = DataLoader(test_dataset, batch_size= 100, shuffle= False, num_workers= 0)
 print("Dataset created")
-# TODO : make batchsize in config or argsparse
 
 
 def train(model, loss_criterion, optimizer, args, epoch, device = device):
@@ -38,6 +37,7 @@ def train(model, loss_criterion, optimizer, args, epoch, device = device):
 
     # train the model
     model.train()
+    total_loss = 0
     for iteration, (userid, movieid, label) in enumerate(train_dataloader):
         if device == "cuda":
             userid = userid.to(device)
@@ -53,17 +53,25 @@ def train(model, loss_criterion, optimizer, args, epoch, device = device):
         # Back Propagation
         loss.backward()
         optimizer.step()
-        writer.add_scalar("data/loss", loss.item(), iteration)
+
+    # add train average loss
+        total_loss += userid.shape[0]*loss.item() 
+
+    # calculate the avg_loss for the epoch
+    avg_loss = total_loss/len(train_dataloader)
+    writer.add_scalar("data/trainloss", avg_loss, epoch)
 
     # evaluate the model
     model.eval()
     HR, NDCG = evaluate_metrics(model, test_dataloader, config_ncf["top_k"])
+    writer.add_scalar("data/eval_HR", HR, epoch)
+    writer.add_scalar("data/eval_NDCG", NDCG, epoch)
     print("Test metrics: HR = {:.4f} and NDCG = {:.4f}".format(HR, NDCG))
 
     # save the weights
+    if not os.path.exists("weights/"):
+        os.makedirs("weights/")
     model_weight_path = f"weights/NCF_weights_{epoch}_.pth"
-    # if not os.path.exists(model_weight_path):
-    #     os.makedirs(model_weight_path)
     torch.save(model.state_dict(), model_weight_path)
     print("Checkpoint saved to {}".format(model_weight_path))
     
@@ -77,8 +85,9 @@ if __name__ == "__main__":
     parser.add_argument("--ratings_train_pos_path", type = str, default = "data/ratings_train_pos")
     parser.add_argument("--ratings_train_neg_path", type = str, default = "data/ratings_train_neg")
     parser.add_argument("--ratings_test_path", type = str, default= "data/ratings_test_neg")
+    parser.add_argument("--epochs", type = int, default = 25)
     args = parser.parse_args()
 
-    for epoch in range(10):
+    for epoch in range(args.epochs):
         train(model, loss_criterion, optimizer, args, epoch, device = device)
     
