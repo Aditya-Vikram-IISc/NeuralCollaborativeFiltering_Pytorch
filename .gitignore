@@ -2,4 +2,8 @@ venv
 notebooks
 __pycache__
 runs
-data
+data/ratings_test_neg
+data/ratings_test_pos
+data/ratings_train_neg
+data/ratings_train_pos
+data/ratings.dat
