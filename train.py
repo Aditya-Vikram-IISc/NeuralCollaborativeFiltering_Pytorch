@@ -13,24 +13,18 @@ from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
 
+def train_test_dataloaders(ratings_train_pos_path:str, ratings_train_neg_path:str, ratings_test_path:str):
+    
+    # load the datasets
+    train_dataset = NCFTraining_Dataset(ratings_train_pos_path = ratings_train_pos_path, ratings_train_neg_path = ratings_train_neg_path)
+    test_dataset = NCFTesting_Dataset(ratings_test_path = ratings_test_path)
+    train_dataloader = DataLoader(train_dataset, batch_size=256, shuffle=True, num_workers=2)
+    test_dataloader = DataLoader(test_dataset, batch_size= 100, shuffle= False, num_workers= 0)
+    return train_dataloader, test_dataloader
 
-# create an instance of the model
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = NeuCF(config_nuemf = config_ncf)
-loss_criterion = nn.BCEWithLogitsLoss()
-optimizer = optim.Adam(model.parameters(), lr=config_ncf["lr_rate"])
-
-# Load the datasets
-train_dataset = NCFTraining_Dataset(ratings_train_pos_path = "data/ratings_train_pos", ratings_train_neg_path = "data/ratings_train_neg")
-test_dataset = NCFTesting_Dataset(ratings_test_path = "data/ratings_test_neg")
-train_dataloader = DataLoader(train_dataset, batch_size=256, shuffle=True, num_workers=2)
-test_dataloader = DataLoader(test_dataset, batch_size= 100, shuffle= False, num_workers= 0)
-print("Dataset created")
-
-
-def train(model, loss_criterion, optimizer, args, epoch, device = device):
+def train(model, loss_criterion, optimizer, train_dataloader, test_dataloader, epoch, device):
     writer = SummaryWriter()  # for visualization
-
+    
     if device == "cuda":
         model = model.to(device)
         loss_criterion = loss_criterion.to(device)
@@ -88,6 +82,18 @@ if __name__ == "__main__":
     parser.add_argument("--epochs", type = int, default = 25)
     args = parser.parse_args()
 
+    # generate traindataloader and testdataloader
+    train_dataloader, test_dataloader = train_test_dataloaders(ratings_train_pos_path= args.ratings_train_pos_path, ratings_train_neg_path = args.ratings_train_neg_path, ratings_test_path = args.ratings_test_path)
+
+    # create model and optimizer instance 
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model = NeuCF(config_nuemf = config_ncf)
+    loss_criterion = nn.BCEWithLogitsLoss()
+    optimizer = optim.Adam(model.parameters(), lr=config_ncf["lr_rate"])
+
+    # train the model
     for epoch in range(args.epochs):
-        train(model, loss_criterion, optimizer, args, epoch, device = device)
+        train(model = model, loss_criterion = loss_criterion, optimizer = optimizer, \
+              train_dataloader = train_dataloader, test_dataloader = test_dataloader, \
+              epoch = epoch, device = device)
     
