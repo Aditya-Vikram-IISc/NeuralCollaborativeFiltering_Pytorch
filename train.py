@@ -25,18 +25,18 @@ def train_test_dataloaders(ratings_train_pos_path:str, ratings_train_neg_path:st
 def train(model, loss_criterion, optimizer, train_dataloader, test_dataloader, epoch, device):
     writer = SummaryWriter()  # for visualization
     
-    if device == "cuda":
-        model = model.to(device)
-        loss_criterion = loss_criterion.to(device)
+    # transfer the model, and loss function to cuda, if available
+    model = model.to(device)
+    loss_criterion = loss_criterion.to(device)
 
     # train the model
     model.train()
     total_loss = 0
     for iteration, (userid, movieid, label) in enumerate(train_dataloader):
-        if device == "cuda":
-            userid = userid.to(device)
-            movieid = movieid.to(device)
-            label = label.float().to(device)
+        # transfer the data to cuda, if available
+        userid = userid.to(device)
+        movieid = movieid.to(device)
+        label = label.float().to(device)
 
         optimizer.zero_grad()
 

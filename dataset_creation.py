@@ -4,6 +4,7 @@ import numpy as np
 from tqdm import tqdm
 import random
 import csv
+import os
 
 
 
@@ -129,6 +130,9 @@ if __name__ == "__main__":
     parser.add_argument("--n_train_negatives", type = int, default = 4)
     parser.add_argument("--n_test_negatives", type = int, default = 100)
     args = parser.parse_args()
+
+    if not os.path.exists("data/"):
+        os.makedirs("data/")
 
     # create an instance of the dataset
     datapreprocessor = Datapreprocessor(file_path = args.file_path)
