@@ -1,6 +1,5 @@
 venv
-data
 notebooks
 __pycache__
 runs
-weights
+data
