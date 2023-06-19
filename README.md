@@ -37,7 +37,9 @@ where, epochs is the number of epochs the model needs to be trained. By default,
 
 The model was training without initialization for 25 epochs. The HR@10 and NDCF@10 is summarizeed in the figure below:
 
-- | - 
-![alt]("/images/hr.png") | ![alt]("/images/hr.png")
+
+|![HR](./images/hr.png) |![NDCG](./images/ndcg.png)|
+|-|-|
+
 
 
