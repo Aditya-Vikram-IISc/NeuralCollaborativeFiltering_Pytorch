@@ -25,7 +25,7 @@ testpos_path: based on leave-one-out formulation containing the latest item for 
 trainneg_path: file containing negative data i.e. no user-item interaction. Four negative instances (n_train_negatives) per positive instance is created for training in (user_id, movie_id) format. Note that negative instances are simply movies not interacted by the user
 testneg_path: randomly sampled 100 items that are not interacted by the user. For each positive instances in testpos_path, we have sampled 99 (n_test_negatives-1) negative instances in (user_id, movied_id) followed by 99 non-interacted movie_ids by the corresponding user.
 
-## 3. Model Training
+## 3. MODEL TRAINING
 
 To train the neural matrix factorization model, simply run the following command:
 
@@ -33,7 +33,7 @@ To train the neural matrix factorization model, simply run the following command
 
 where, epochs is the number of epochs the model needs to be trained. By default, it supports CUDA training, if its available.
 
-## 4. Results
+## 4. RESULTS
 
 The model was training without initialization for 25 epochs. The HR@10 and NDCF@10 is summarized in the figure below:
 
@@ -42,4 +42,8 @@ The model was training without initialization for 25 epochs. The HR@10 and NDCF@
 |-|-|
 
 
+## 5. THINGS TO DO
 
+a. Add reco generation pipeline
+b. Possibly add streamlit for FrontEnd
+c. Docker Images
